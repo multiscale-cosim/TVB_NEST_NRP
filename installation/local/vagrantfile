@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
 
   # vagrant ouput name on console (during installation)
-  config.vm.define "cosim_ubuntu_vm"
+  config.vm.define "cosim_ubuntu_vm1"
   
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
     # Display the VirtualBox GUI when booting the machine
     # vb.gui = true
     # name of the VirtualBox GUI
-    vb.name = "cosim_ubuntu_gui"
+    vb.name = "cosim_ubuntu_gui1"
   
     # Customize the amount of memory on the VM:
     vb.memory = "8192"

@@ -64,8 +64,35 @@ echo "1" | sudo update-alternatives --config mpi 1>/dev/null 2>&1 # --> choosing
 echo "1" | sudo update-alternatives --config mpirun 1>/dev/null 2>&1 # --> choosing mpirun
  
 #
-# STEP 3 - install python packages for the TVB-NEST use-case
+# STEP 3 - install gym-pybullet-drones
 #
+
+cd ${CO_SIM_ROOT_PATH}
+git clone https://github.com/utiasDSL/gym-pybullet-drones
+cd gym-pybullet-drones
+
+cat <<EOF >>setup.py
+from setuptools import setupsetup(name='gym_pybullet_drones',
+    version='1.0.0',
+    install_requires=[
+        'numpy',
+        'Pillow',
+        'matplotlib',
+        'cycler',
+        'gym',
+        'pybullet',
+        'stable_baselines3',
+        'ray[rllib]'
+        ]
+)
+EOF
+
+export PIP_DEFAULT_TIMEOUT=1000
+pip3 install --timeout 1000 -e .
+echo -e '\nexport PYTHONPATH="$PYTHONPATH:'"${CO_SIM_ROOT_PATH}"'/gym-pybullet-drones"\n' >>~/.bashrc
+cd ..
+
+
 #
 # STEP 4 - TVB
 #
@@ -77,7 +104,7 @@ pip install --no-cache --target=${CO_SIM_SITE_PACKAGES} \
 # 
 # STEP 5 - cloning github repos
 #
-git clone --recurse-submodules --jobs 4 https://github.com/${GIT_DEFAULT_NAME}/TVB-NEST-usecase1.git
+git clone --recurse-submodules --jobs 4 https://github.com/${GIT_DEFAULT_NAME}/TVB_NEST_NRP.git
 
 #
 # STEP 6 - NEST compilation
@@ -95,7 +122,7 @@ mkdir -p ${CO_SIM_NEST}
 cd ${CO_SIM_NEST_BUILD}
 cmake \
     -DCMAKE_INSTALL_PREFIX:PATH=${CO_SIM_NEST} \
-    ${CO_SIM_ROOT_PATH}/TVB-NEST-usecase1/nest-simulator/ \
+    ${CO_SIM_ROOT_PATH}/TVB_NEST_NRP/nest-simulator/ \
     -Dwith-mpi=ON \
     -Dwith-openmp=ON \
     -Dwith-readline=ON \
@@ -143,12 +170,12 @@ fi
 # STEP 8 - Generating the .source file based on ENV variables
 #
 NEST_PYTHON_PREFIX=`find ${CO_SIM_NEST} -name site-packages`
-CO_SIM_USE_CASE_ROOT_PATH=${CO_SIM_ROOT_PATH}/TVB-NEST-usecase1
-CO_SIM_MODULES_ROOT_PATH=${CO_SIM_ROOT_PATH}/TVB-NEST-usecase1
+CO_SIM_USE_CASE_ROOT_PATH=${CO_SIM_ROOT_PATH}/TVB_NEST_NRP
+CO_SIM_MODULES_ROOT_PATH=${CO_SIM_ROOT_PATH}/TVB_NEST_NRP
 
 SUFFIX_PYTHONPATH="\${PYTHONPATH:+:\$PYTHONPATH}"
 
-cat <<.EOSF > ${CO_SIM_ROOT_PATH}/TVB-NEST-usecase1.source
+cat <<.EOSF > ${CO_SIM_ROOT_PATH}/TVB_NEST_NRP.source
 #!/bin/bash
 export CO_SIM_ROOT_PATH=${CO_SIM_ROOT_PATH}
 export CO_SIM_USE_CASE_ROOT_PATH=${CO_SIM_USE_CASE_ROOT_PATH}
@@ -194,7 +221,7 @@ python3 \${CO_SIM_USE_CASE_ROOT_PATH}/main.py \\
 .EORF
 
 cat <<.EOKF >${CO_SIM_ROOT_PATH}/kill_co_sim_PIDs.sh
-for co_sim_PID in \`ps aux | grep TVB-NEST-usecase1 | sed 's/user//g' | sed 's/^ *//g' | cut -d" " -f 1\`; do kill -9 \$co_sim_PID; done
+for co_sim_PID in \`ps aux | grep TVB_NEST_NRP | sed 's/user//g' | sed 's/^ *//g' | cut -d" " -f 1\`; do kill -9 \$co_sim_PID; done
 .EOKF
 
 #
